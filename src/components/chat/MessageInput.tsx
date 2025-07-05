@@ -103,10 +103,20 @@ export const MessageInput = ({
     setIsFocused(false);
   };
 
-  const handleVoiceInput = () => {
-    // TODO: Implement voice input functionality
-    console.log('Voice input clicked');
-  };
+  const handleVoiceInput = useCallback(() => {
+    // For now, this is a placeholder. In a real implementation,
+    // this would integrate with voice recording hooks
+    if (typeof onTyping === 'function') {
+      onTyping(true);
+      
+      // Simulate voice input process
+      setTimeout(() => {
+        const simulatedTranscription = 'Voice input detected...';
+        setMessage(prev => prev + (prev ? ' ' : '') + simulatedTranscription);
+        onTyping(false);
+      }, 1000);
+    }
+  }, [onTyping]);
 
   const remainingChars = maxLength - message.length;
   const isNearLimit = remainingChars < 100;

@@ -12,7 +12,20 @@ export const ChatInterface = ({
   onAgentHandoff,
   agentName 
 }: ChatInterfaceProps) => {
-  const { messages, isLoading, error, sendMessage, clearMessages, clearError, reconnect } = useChat();
+  const { 
+    messages, 
+    isLoading, 
+    error, 
+    isConnected,
+    currentAgent,
+    sendMessage, 
+    clearMessages, 
+    clearError, 
+    reconnect 
+  } = useChat({
+    enablePersistence: true,
+    onAgentHandoff,
+  });
   const [retryCount, setRetryCount] = useState(0);
   const [isConnecting, setIsConnecting] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
@@ -74,10 +87,13 @@ export const ChatInterface = ({
           <div className="flex items-center space-x-1">
             <div className={`w-2 h-2 rounded-full ${
               isConnecting ? 'bg-yellow-500 animate-pulse' :
-              error ? 'bg-red-500' : 'bg-green-500'
+              error ? 'bg-red-500' : 
+              isConnected ? 'bg-green-500' : 'bg-gray-400'
             }`} />
             <span className="text-xs text-gray-600">
-              {isConnecting ? 'Connecting...' : error ? 'Error' : 'Connected'}
+              {isConnecting ? 'Connecting...' : 
+               error ? 'Error' : 
+               isConnected ? 'Connected' : 'Offline'}
             </span>
           </div>
           <button

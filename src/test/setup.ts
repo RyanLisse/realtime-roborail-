@@ -305,3 +305,204 @@ vi.mock('openai', () => ({
   default: vi.fn().mockImplementation(() => mockOpenAI),
   OpenAI: vi.fn().mockImplementation(() => mockOpenAI),
 }));
+
+// Mock @openai/agents/realtime
+vi.mock('@openai/agents/realtime', () => ({
+  RealtimeSession: vi.fn().mockImplementation(() => ({
+    connect: vi.fn().mockResolvedValue(undefined),
+    disconnect: vi.fn().mockResolvedValue(undefined),
+    addAgent: vi.fn(),
+    removeAgent: vi.fn(),
+    on: vi.fn(),
+    off: vi.fn(),
+    interrupt: vi.fn(),
+    pause: vi.fn(),
+    resume: vi.fn(),
+    sendMessage: vi.fn(),
+    switchAgent: vi.fn(),
+    startRecording: vi.fn(),
+    stopRecording: vi.fn(),
+    isConnected: vi.fn().mockReturnValue(false),
+    isRecording: vi.fn().mockReturnValue(false),
+    agents: [],
+    currentAgent: null,
+    status: 'disconnected',
+    emit: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+  RealtimeAgent: vi.fn().mockImplementation((config) => ({
+    ...config,
+    id: 'test-agent-id',
+    name: config.name || 'Test Agent',
+    instructions: config.instructions || 'Test instructions',
+    tools: config.tools || [],
+    toolLogic: config.toolLogic || {},
+    downstreamAgents: config.downstreamAgents || [],
+    publicDescription: config.publicDescription || 'Test agent description',
+  })),
+  OpenAIRealtimeWebRTC: vi.fn().mockImplementation(() => ({
+    connect: vi.fn().mockResolvedValue(undefined),
+    disconnect: vi.fn().mockResolvedValue(undefined),
+    on: vi.fn(),
+    off: vi.fn(),
+    send: vi.fn(),
+    close: vi.fn(),
+    readyState: 1, // WebSocket.OPEN
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+}));
+
+// Mock agent configurations
+vi.mock('@/app/agentConfigs', () => ({
+  agentConfigs: {
+    'test-scenario': {
+      name: 'Test Scenario',
+      description: 'Test scenario description',
+      agents: [
+        {
+          name: 'Test Agent',
+          instructions: 'Test agent instructions',
+          tools: [],
+          toolLogic: {},
+          downstreamAgents: [],
+          publicDescription: 'Test agent for testing purposes'
+        }
+      ]
+    }
+  }
+}));
+
+// Mock Next.js router
+vi.mock('next/navigation', () => ({
+  useRouter: vi.fn(() => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+    prefetch: vi.fn(),
+  })),
+  usePathname: vi.fn(() => '/'),
+  useSearchParams: vi.fn(() => new URLSearchParams()),
+}));
+
+// Mock Next.js headers
+vi.mock('next/headers', () => ({
+  headers: vi.fn(() => ({
+    get: vi.fn(),
+    has: vi.fn(),
+    set: vi.fn(),
+    delete: vi.fn(),
+    append: vi.fn(),
+    getSetCookie: vi.fn(),
+    entries: vi.fn(),
+    keys: vi.fn(),
+    values: vi.fn(),
+    forEach: vi.fn(),
+  })),
+}));
+
+// Mock ResizeObserver
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
+
+// Mock IntersectionObserver
+global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
+
+// Mock WebSocket
+global.WebSocket = vi.fn().mockImplementation(() => ({
+  send: vi.fn(),
+  close: vi.fn(),
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+  dispatchEvent: vi.fn(),
+  readyState: 1,
+  CONNECTING: 0,
+  OPEN: 1,
+  CLOSING: 2,
+  CLOSED: 3,
+}));
+
+// Mock WebRTC APIs
+global.RTCPeerConnection = vi.fn().mockImplementation(() => ({
+  createOffer: vi.fn().mockResolvedValue({ type: 'offer', sdp: 'mock-sdp' }),
+  createAnswer: vi.fn().mockResolvedValue({ type: 'answer', sdp: 'mock-sdp' }),
+  setLocalDescription: vi.fn().mockResolvedValue(undefined),
+  setRemoteDescription: vi.fn().mockResolvedValue(undefined),
+  addIceCandidate: vi.fn().mockResolvedValue(undefined),
+  getStats: vi.fn().mockResolvedValue(new Map()),
+  close: vi.fn(),
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+  dispatchEvent: vi.fn(),
+  connectionState: 'connected',
+  iceConnectionState: 'connected',
+  signalingState: 'stable',
+}));
+
+// Mock performance APIs
+global.performance = {
+  ...global.performance,
+  now: vi.fn(() => Date.now()),
+  mark: vi.fn(),
+  measure: vi.fn(),
+  clearMarks: vi.fn(),
+  clearMeasures: vi.fn(),
+  getEntries: vi.fn(() => []),
+  getEntriesByName: vi.fn(() => []),
+  getEntriesByType: vi.fn(() => []),
+};
+
+// Mock crypto APIs
+Object.defineProperty(global, 'crypto', {
+  value: {
+    randomUUID: vi.fn(() => 'test-uuid-123'),
+    getRandomValues: vi.fn((arr) => {
+      for (let i = 0; i < arr.length; i++) {
+        arr[i] = Math.floor(Math.random() * 256);
+      }
+      return arr;
+    }),
+    subtle: {
+      digest: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
+      encrypt: vi.fn().mockResolvedValue(new ArrayBuffer(16)),
+      decrypt: vi.fn().mockResolvedValue(new ArrayBuffer(16)),
+      sign: vi.fn().mockResolvedValue(new ArrayBuffer(64)),
+      verify: vi.fn().mockResolvedValue(true),
+      generateKey: vi.fn().mockResolvedValue({}),
+      importKey: vi.fn().mockResolvedValue({}),
+      exportKey: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
+      deriveBits: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
+      deriveKey: vi.fn().mockResolvedValue({}),
+      wrapKey: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
+      unwrapKey: vi.fn().mockResolvedValue({}),
+    },
+  },
+  configurable: true,
+});
+
+// Enhanced cleanup after each test
+afterEach(() => {
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+  // Reset DOM state
+  document.body.innerHTML = '';
+  // Reset any global state
+  if (global.localStorage) {
+    global.localStorage.clear();
+  }
+  if (global.sessionStorage) {
+    global.sessionStorage.clear();
+  }
+});

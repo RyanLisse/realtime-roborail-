@@ -107,32 +107,54 @@ export function useRealtimeSession(callbacks: RealtimeSessionCallbacks = {}) {
     }
     
     try {
-      // TODO: Implement agent switching logic with the session
+      // Trigger agent switch via tool call
+      const agentTransferTool = {
+        type: 'function',
+        function: {
+          name: `transfer_to_${agentName}`,
+          description: `Transfer conversation to ${agentName}`,
+          parameters: {
+            type: 'object',
+            properties: {
+              reason: {
+                type: 'string',
+                description: 'Reason for the transfer'
+              }
+            }
+          }
+        }
+      };
+      
+      // Send agent transfer event
+      sessionRef.current.transport.sendEvent({
+        type: 'conversation.item.create',
+        item: {
+          type: 'function_call',
+          name: `transfer_to_${agentName}`,
+          call_id: `transfer_${Date.now()}`,
+          arguments: JSON.stringify({ reason: 'User requested agent switch' })
+        }
+      } as any);
+      
       setCurrentAgent(agentName);
       callbacks.onAgentHandoff?.(agentName);
     } catch (error) {
       console.error('Failed to switch agent:', error);
+      updateStatus('CONNECTED', error as Error);
       throw error;
     }
-  }, [callbacks]);
+  }, [callbacks, updateStatus]);
+
+  const [connectionOptions, setConnectionOptions] = useState<ConnectOptions | null>(null);
 
   const reconnect = useCallback(async () => {
-    if (!sessionRef.current) {
-      throw new Error('No session to reconnect');
+    if (!connectionOptions) {
+      throw new Error('No connection options available for reconnect');
     }
     
-    const lastOptions = {
-      getEphemeralKey: async () => {
-        // You'll need to store this from the original connect call
-        throw new Error('Reconnect requires stored connection options');
-      },
-      initialAgents: [],
-      retryAttempts: 1,
-    };
-    
     disconnect();
-    await connect(lastOptions);
-  }, []);
+    await connect(connectionOptions);
+  }, [connectionOptions, disconnect]);
 
   useEffect(() => {
     if (sessionRef.current) {
@@ -205,6 +227,17 @@ export function useRealtimeSession(callbacks: RealtimeSessionCallbacks = {}) {
 
       updateStatus('CONNECTING');
       setLastError(null);
+      
+      // Store connection options for reconnect
+      setConnectionOptions({
+        getEphemeralKey,
+        initialAgents,
+        audioElement,
+        extraContext,
+        outputGuardrails,
+        retryAttempts,
+        retryDelay
+      });
 
       try {
         const ek = await getEphemeralKey();
@@ -343,6 +376,7 @@ export function useRealtimeSession(callbacks: RealtimeSessionCallbacks = {}) {
     currentAgent,
     retryCount,
     lastError,
+    connectionOptions,
     connect,
     disconnect,
     reconnect,
