@@ -9,7 +9,13 @@
     "lint": "next lint",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "test:e2e": "playwright test",
+    "test:security": "vitest run src/test/security/",
+    "test:performance": "vitest run src/test/performance/",
+    "db:migrate": "tsx src/lib/database/migrate.ts",
+    "db:generate": "tsx src/lib/database/generate.ts",
+    "health-check": "curl -f http://localhost:3000/api/health || exit 1"
   },
   "dependencies": {
     "@browserbasehq/sdk": "^2.6.0",
@@ -33,6 +39,7 @@
     "@eslint/eslintrc": "^3",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^19",
